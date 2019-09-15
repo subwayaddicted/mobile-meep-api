@@ -1,6 +1,10 @@
-from flask import Flask
+from flask import Flask, jsonify
+
 app = Flask(__name__)
+
 
 @app.route('/')
 def test():
-    return 'Hello, World as test message!'
+    return jsonify(
+        test_data='test_string'
+    )
