@@ -6,7 +6,7 @@
  Install Anaconda
  ```
  // Creating new venv
- conda create -n mobile-meep -c conda-forge flask pymeep flask-restplus
+ conda create -n mobile-meep -c conda-forge flask pymeep flask-restplus imageio
  // Clone this repo
  git clone ...
  // Export flask vars
