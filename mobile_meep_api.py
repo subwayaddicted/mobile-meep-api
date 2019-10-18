@@ -4,7 +4,7 @@ import meep as mp
 from image_transformer import ImageTransformer
 
 app = Flask(__name__)
-api = Api(app, version='0.1', title='meep API', description='meep package used as API')
+api = Api(app, version='0.1.1', title='meep API', description='meep package used as API')
 
 ns_waveguides = api.namespace('waveguides', description='Simple waveguides endpoints')
 
@@ -133,6 +133,9 @@ class NinetyBend(Resource):
 		sim.use_output_directory(dir_out)
 
 		sim.run(mp.at_every(0.6, mp.output_png(mp.Ez, "-Zc" + colormap)), until=200)
+
+		image_transformer = ImageTransformer(dir_out)
+		image_transformer.png_to_gif()
 
 		return jsonify(
 			electric='test message atm 52'
