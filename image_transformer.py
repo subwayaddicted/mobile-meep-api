@@ -7,7 +7,7 @@ class ImageTransformer:
     def __init__(self, dir_out):
         self.png_dir = dir_out
         self.images = []
-        self.gif_dir = dir_out + 'movie.gif'
+        self.gif_dir = dir_out + '-' + 'movie.gif'
 
     def png_to_gif(self):
         for file_name in os.listdir(self.png_dir):
