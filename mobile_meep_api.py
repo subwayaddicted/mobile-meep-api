@@ -6,7 +6,7 @@ from image_transformer import ImageTransformer
 import base64
 
 app = Flask(__name__)
-api = Api(app, version='0.1.1', title='meep API', description='meep package used as API')
+api = Api(app, version='0.2.1', title='meep API', description='meep package used as API')
 
 ns_waveguides = api.namespace('waveguides', description='Simple waveguides endpoints')
 
