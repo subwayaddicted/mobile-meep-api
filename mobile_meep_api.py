@@ -1,3 +1,4 @@
+import os
 from flask import Flask, jsonify
 from flask_restplus import Api, Resource
 import meep as mp
@@ -14,8 +15,9 @@ ns_waveguides = api.namespace('waveguides', description='Simple waveguides endpo
 class StraightWaveguide(Resource):
 	@api.doc('Returns test text and computes of e/m wave propagation in straight waveguide')
 	def get(self):
+		root_dir = os.path.dirname(app.instance_path)
 		dir_out = 'mobile-meep-out/straight'
-		colormap = ' /home/NIX/novitsky/PycharmProjects/mobile-meep-api/colormaps/dkbluered'
+		colormap = os.path.join(root_dir, 'colormaps', 'dkbluered')
 
 		cell = mp.Vector3(16, 8, 0)
 
@@ -43,7 +45,7 @@ class StraightWaveguide(Resource):
 			sources=sources,
 			resolution=resolution)
 
-		sim.run(until=200)
+		sim.use_output_directory(dir_out)
 
 		sim.run(mp.at_every(0.6, mp.output_png(mp.Ez, "-Zc" + colormap)), until=200)
 
@@ -59,8 +61,9 @@ class StraightWaveguide(Resource):
 class NinetyDegreeBend(Resource):
 	@api.doc('Returns test text and computes of e/m wave propagation in 90 degree bend waveguide')
 	def get(self):
+		root_dir = os.path.dirname(app.instance_path)
 		dir_out = 'mobile-meep-out/ninety-degree-bend'
-		colormap = ' /home/NIX/novitsky/PycharmProjects/mobile-meep-api/colormaps/dkbluered'
+		colormap = os.path.join(root_dir, 'colormaps', 'dkbluered')
 
 		cell = mp.Vector3(16, 16, 0)
 		geometry = [mp.Block(
