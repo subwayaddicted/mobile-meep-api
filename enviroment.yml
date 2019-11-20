@@ -1,0 +1,9 @@
+name: mobile-meep-api
+channels:
+  - conda-forge
+dependencies:
+  - python=3.7   # or 2.7
+  - flask
+  - flask-restplus
+  - pymeep
+  - imageio
