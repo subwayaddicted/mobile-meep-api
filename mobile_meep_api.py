@@ -1,5 +1,5 @@
 from flask import Flask
-from app.controllers.waveguides import waveguides
+from app.meep_api.controllers.waveguides import waveguides
 
 
 app = Flask(__name__)
