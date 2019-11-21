@@ -2,8 +2,8 @@ import os
 from flask import Blueprint, jsonify
 from flask_restplus import Api, Resource
 import meep as mp
-from app.models.image_transformer import ImageTransformer
-from app.models.waveguide import Waveguide
+from app.meep_api.models.image_transformer import ImageTransformer
+from app.meep_api.models.waveguide import Waveguide
 import base64
 
 waveguides = Blueprint('waveguides', __name__)

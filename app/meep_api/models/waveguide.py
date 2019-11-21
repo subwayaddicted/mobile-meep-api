@@ -1,8 +1,7 @@
 import os
 from typing import Union
-
 import meep as mp
-from app.models.image_transformer import ImageTransformer
+from app.meep_api.models.image_transformer import ImageTransformer
 
 
 class Waveguide:
