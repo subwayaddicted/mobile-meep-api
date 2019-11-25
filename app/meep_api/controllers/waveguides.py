@@ -24,15 +24,20 @@ class Cell(Resource):
 		cell_parser = cell.parse_request(waveguide_namespace)
 		args = cell_parser.parse_args()
 
-		waveguide = Waveguide(waveguides, args['waveguide_type'])
+		waveguide_args = {
+			'data':{
+				'cell': {}
+			},
+			'waveguide_type':str
+		}
 
 		for arg in args:
 			if arg == 'waveguide_type':
-				waveguide.args[arg] = args[arg]
-			waveguide.args['cell'][arg] = args[arg]
+				waveguide_args['waveguide_type'] = args[arg]
+			waveguide_args['data']['cell'] = args[arg]
 
 		return jsonify(
-			waveguide=waveguide.args
+			waveguide_args=waveguide_args
 		)
 
 

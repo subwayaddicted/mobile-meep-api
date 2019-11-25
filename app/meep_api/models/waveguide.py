@@ -9,7 +9,6 @@ class Waveguide:
 	root_dir: str
 	dir_out: str
 	colormap: str
-	args: dict
 	sim_data: dict
 
 	def __init__(self, blueprint: Blueprint, waveguide_type: str):
@@ -17,7 +16,6 @@ class Waveguide:
 		self.dir_out = 'mobile-meep-out/' + waveguide_type
 		self.colormap = os.path.join(self.root_dir, 'static', 'colormaps', 'dkbluered')
 		self.sim_data = {}
-		self.args = {}
 
 	def set_cell(self, args: dict):
 		self.sim_data['cell'] = mp.Vector3(args['x'], args['y'], args['z'])
