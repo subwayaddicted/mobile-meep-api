@@ -9,24 +9,25 @@ class Waveguide:
 	root_dir: str
 	dir_out: str
 	colormap: str
-	data: dict
+	args: dict
+	sim_data: dict
 
 	def __init__(self, namespace: Blueprint, waveguide_type: str):
 		self.root_dir = os.path.dirname(namespace.root_path)
 		self.dir_out = 'mobile-meep-out/' + waveguide_type
 		self.colormap = os.path.join(self.root_dir, 'static', 'colormaps', 'dkbluered')
-		self.data = {}
+		self.sim_data = {}
 
 	def set_cell(self, args: dict):
-		self.data['cell'] = mp.Vector3(args['x'], args['y'], 0).__dict__
+		self.sim_data['cell'] = mp.Vector3(args['x'], args['y'], args['z'])
 
 	def get_cell(self) -> object:
-		cell = self.data['cell']
+		cell = self.sim_data['cell']
 
 		return cell
 
 	def set_geometry(self):
-		self.data['geometry'] = [
+		self.sim_data['geometry'] = [
 			mp.Block(
 				mp.Vector3(mp.inf, 1, mp.inf),
 				center=mp.Vector3(),
@@ -34,17 +35,17 @@ class Waveguide:
 		]
 
 	def set_sources(self):
-		self.data['sources'] = [mp.Source(
+		self.sim_data['sources'] = [mp.Source(
 			mp.ContinuousSource(frequency=0.15),
 			component=mp.Ez,
 			center=mp.Vector3(-7, 0))
 		]
 
 	def set_layers(self):
-		self.data['pml_layers'] = [mp.PML(1.0)]
+		self.sim_data['pml_layers'] = [mp.PML(1.0)]
 
 	def set_resolution(self):
-		self.data['resolution'] = 10
+		self.sim_data['resolution'] = 10
 
 	def simulate(self, data: dict) -> mp.Simulation:
 		simulation = mp.Simulation(
@@ -66,4 +67,4 @@ class Waveguide:
 		image_transformer.png_to_gif(duration)
 
 	def discard_data(self):
-		self.data = {}
+		self.sim_data = {}

@@ -18,17 +18,19 @@ class Cell(Resource):
 	@waveguide_namespace.param('x', 'x')
 	@waveguide_namespace.param('y', 'y')
 	@waveguide_namespace.param('z', 'z')
+	@waveguide_namespace.param('waveguide_type', 'waveguide type')
 	def post(self):
 		cell = CellModel()
 		cell_parser = cell.parse_request(waveguide_namespace)
 		args = cell_parser.parse_args()
 
-		waveguide = Waveguide(waveguides, 'straight')
+		waveguide = Waveguide(waveguide_namespace, args['waveguide_type'])
 
-		waveguide.set_cell(args)
+		for arg in args:
+			waveguide.args[arg] = args[arg]
 
 		return jsonify(
-			waveguide=waveguide.__dict__
+			waveguide=waveguide.args
 		)
 
 
