@@ -1,12 +1,11 @@
 import os
-import io
 from flask import Blueprint, jsonify
 from flask_restplus import Api, Resource, reqparse
 import meep as mp
 from app.meep_api.models.image_transformer import ImageTransformer
 from app.meep_api.models.waveguide import Waveguide
-import base64
-import matplotlib.pyplot as plt
+from app.meep_api.models.cellmodel import CellModel
+from app.meep_api.models.geometrymodel import GeometryModel
 
 waveguides = Blueprint('waveguides', __name__)
 waveguides_api = Api(waveguides, version='0.2.3', title='meep API waveguides', description='waveguides API')
@@ -19,45 +18,51 @@ class Cell(Resource):
 	@waveguide_namespace.param('x', 'x')
 	@waveguide_namespace.param('y', 'y')
 	@waveguide_namespace.param('z', 'z')
-	@waveguide_namespace.param('preview', 'Whether render preview or not')
 	def post(self):
-		parser = waveguide_namespace.parser()
-		parser.add_argument('preview', type=int, location='args', help='Whether render preview or not')
-		parser.add_argument('z', type=int, location='args', help='z')
-		parser.add_argument('y', type=int, location='args', help='y')
-		parser.add_argument('x', type=int, location='args', help='x')
-		args = parser.parse_args()
+		cell = CellModel()
+		cell_parser = cell.parse_request(waveguide_namespace)
+		args = cell_parser.parse_args()
+
 		waveguide = Waveguide(waveguides, 'straight')
 
+		waveguide.set_cell(args)
+
+		return jsonify(
+			waveguide=waveguide.__dict__
+		)
+
+
+@waveguide_namespace.route('/geometry')
+class Geometry(Resource):
+	@waveguide_namespace.doc('Sets geometry with preview ability')
+	@waveguide_namespace.param('waveguide', 'Waveguide')
+	@waveguide_namespace.param('preview', 'Preview')
+	def post(self):
+		geometry = GeometryModel()
+		geometry_parser = geometry.parse_request(waveguide_namespace)
+		args = geometry_parser.parse_args()
+
+		waveguide = args['waveguide']
+
 		if args['preview'] == 1:
-			waveguide.set_cell(args)
-			waveguide.set_geometry()
-			waveguide.set_sources()
-			waveguide.set_layers()
-			waveguide.set_resolution()
+			geometry.waveguide_set(waveguide, args)
 
 			sim = waveguide.simulate(waveguide.data)
-			eps_data = sim.get_array(center=mp.Vector3(), size=waveguide.get_cell(), component=mp.Dielectric)
-			plt.figure()
-			plt.imshow(eps_data.transpose(), interpolation='spline36', cmap='binary')
-			plt.axis('off')
-			fig_electric = plt.gcf()
+
+			fig_electric = geometry.waveguide_plot(sim, waveguide)
 
 			waveguide.discard_data()
 			waveguide.set_cell(args)
+			waveguide.set_geometry()
 
-			buffer = io.BytesIO()
-			fig_electric.savefig(buffer, format='png')
-			buffer.seek(0)
-			cell_preview = buffer.read()
-			buffer.close()
+			cell_preview = geometry.image_render(fig_electric)
 
 			return jsonify(
 				cell_preview=cell_preview,
 				waveguide=waveguide.__dict__
 			)
 
-		waveguide.set_cell(args)
+		waveguide.set_geometry()
 
 		return jsonify(
 			waveguide=waveguide.__dict__
@@ -67,7 +72,6 @@ class Cell(Resource):
 @waveguide_namespace.route('/straight-waveguide')
 class StraightWaveguide(Resource):
 	@waveguide_namespace.doc('Returns test text and computes of e/m wave propagation in straight waveguide')
-	@waveguide_namespace.param('waveguide', 'Waveguide')
 	def post(self):
 		parser = waveguide_namespace.parser()
 		parser.add_argument('waveguide', type=object, location='args', help='waveguide object')
