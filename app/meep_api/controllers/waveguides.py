@@ -8,17 +8,17 @@ from app.meep_api.models.cellmodel import CellModel
 from app.meep_api.models.geometrymodel import GeometryModel
 
 waveguides = Blueprint('waveguides', __name__)
-waveguides_api = Api(waveguides, version='0.2.3', title='meep API waveguides', description='waveguides API')
+waveguides_api = Api(waveguides, version='0.3.0', title='meep API waveguides', description='waveguides API')
 waveguide_namespace = waveguides_api.namespace('waveguides', description='Simple waveguides endpoints')
 
 
 @waveguide_namespace.route('/cell')
 class Cell(Resource):
 	@waveguide_namespace.doc('Sets cell')
-	@waveguide_namespace.param('x', 'x')
-	@waveguide_namespace.param('y', 'y')
-	@waveguide_namespace.param('z', 'z')
-	@waveguide_namespace.param('waveguide_type', 'waveguide type')
+	@waveguide_namespace.param('x', 'x coordinate of the field')
+	@waveguide_namespace.param('y', 'y coordinate of the field')
+	@waveguide_namespace.param('z', 'z coordinate of the field')
+	@waveguide_namespace.param('waveguide_type', 'Waveguide type (list of available)')
 	def post(self):
 		cell = CellModel()
 		cell_parser = cell.parse_request(waveguide_namespace)
@@ -27,7 +27,9 @@ class Cell(Resource):
 		waveguide = Waveguide(waveguides, args['waveguide_type'])
 
 		for arg in args:
-			waveguide.args[arg] = args[arg]
+			if arg == 'waveguide_type':
+				waveguide.args[arg] = args[arg]
+			waveguide.args['cell'][arg] = args[arg]
 
 		return jsonify(
 			waveguide=waveguide.args
@@ -37,17 +39,17 @@ class Cell(Resource):
 @waveguide_namespace.route('/geometry')
 class Geometry(Resource):
 	@waveguide_namespace.doc('Sets geometry with preview ability')
-	@waveguide_namespace.param('waveguide', 'Waveguide')
+	@waveguide_namespace.param('waveguide_args', 'Waveguide args')
 	@waveguide_namespace.param('preview', 'Preview')
 	def post(self):
 		geometry = GeometryModel()
 		geometry_parser = geometry.parse_request(waveguide_namespace)
 		args = geometry_parser.parse_args()
 
-		waveguide = args['waveguide']
+		waveguide = Waveguide(waveguides, args['waveguide_type'])
 
 		if args['preview'] == 1:
-			geometry.waveguide_set(waveguide, args)
+			geometry.waveguide_set(waveguide)
 
 			sim = waveguide.simulate(waveguide.data)
 
