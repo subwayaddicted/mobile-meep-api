@@ -44,17 +44,23 @@ class Cell(Resource):
 
 @waveguide_namespace.route('/geometry')
 class Geometry(Resource):
+	waveguide_args = {
+		'data': {
+			'cell': {}
+		},
+		'waveguide_type': str
+	}
 	@waveguide_namespace.doc('Sets geometry with preview ability')
 	@waveguide_namespace.param('waveguide_args', 'Waveguide args')
 	@waveguide_namespace.param('preview', 'Preview')
+	@waveguides_api.doc(body=waveguide_args)
 	def post(self):
 		geometry = GeometryModel()
 		geometry_parser = geometry.parse_request(waveguide_namespace)
 		args = geometry_parser.parse_args()
 
-		waveguide = Waveguide(waveguides, args['waveguide_type'])
-
 		if args['preview'] == 1:
+			waveguide = Waveguide(waveguides, args['waveguide_type'])
 			geometry.waveguide_set(waveguide)
 
 			sim = waveguide.simulate(waveguide.data)
@@ -72,10 +78,8 @@ class Geometry(Resource):
 				waveguide=waveguide.__dict__
 			)
 
-		waveguide.set_geometry()
-
 		return jsonify(
-			waveguide=waveguide.__dict__
+			waveguide='test'
 		)
 
 

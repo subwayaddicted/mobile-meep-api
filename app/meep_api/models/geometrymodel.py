@@ -7,7 +7,7 @@ import io
 class GeometryModel:
 	def parse_request(self, namespace: object):
 		parser = namespace.parser()
-		parser.add_argument('waveguide', type=object, location='form', help='Waveguide object')
+		parser.add_argument('waveguide_args', type=object, location='form', help='Waveguide args')
 
 		return parser
 
