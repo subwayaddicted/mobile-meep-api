@@ -12,8 +12,8 @@ class Waveguide:
 	args: dict
 	sim_data: dict
 
-	def __init__(self, namespace: Blueprint, waveguide_type: str):
-		self.root_dir = os.path.dirname(namespace.root_path)
+	def __init__(self, blueprint: Blueprint, waveguide_type: str):
+		self.root_dir = os.path.dirname(blueprint.root_path)
 		self.dir_out = 'mobile-meep-out/' + waveguide_type
 		self.colormap = os.path.join(self.root_dir, 'static', 'colormaps', 'dkbluered')
 		self.sim_data = {}
