@@ -21,10 +21,10 @@ class Cell(Resource):
 	@waveguide_namespace.param('waveguide_type', 'waveguide type')
 	def post(self):
 		cell = CellModel()
-		cell_parser = cell.parse_request(waveguides)
+		cell_parser = cell.parse_request(waveguide_namespace)
 		args = cell_parser.parse_args()
 
-		waveguide = Waveguide(waveguide_namespace, args['waveguide_type'])
+		waveguide = Waveguide(waveguides, args['waveguide_type'])
 
 		for arg in args:
 			waveguide.args[arg] = args[arg]
