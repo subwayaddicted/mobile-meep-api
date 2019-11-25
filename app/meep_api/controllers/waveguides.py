@@ -1,6 +1,6 @@
 import os
 from flask import Blueprint, jsonify
-from flask_restplus import Api, Resource, reqparse
+from flask_restplus import Api, Resource, fields
 import meep as mp
 from app.meep_api.models.image_transformer import ImageTransformer
 from app.meep_api.models.waveguide import Waveguide
@@ -10,6 +10,14 @@ from app.meep_api.models.geometrymodel import GeometryModel
 waveguides = Blueprint('waveguides', __name__)
 waveguides_api = Api(waveguides, version='0.3.0', title='meep API waveguides', description='waveguides API')
 waveguide_namespace = waveguides_api.namespace('waveguides', description='Simple waveguides endpoints')
+
+cell_model = {'x': fields.String(attribure='x'), 'y': fields.String(attribure='y'), 'z': fields.String(attribure='z')}
+geometry_model = {}
+data = {}
+
+waveguide_namespace.model('waveguide_data', {
+	'data':fields.Nested()
+})
 
 
 @waveguide_namespace.route('/cell')
