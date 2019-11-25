@@ -34,7 +34,7 @@ class Cell(Resource):
 		for arg in args:
 			if arg == 'waveguide_type':
 				waveguide_args['waveguide_type'] = args[arg]
-			waveguide_args['data']['cell'] = args[arg]
+			waveguide_args['data']['cell'][arg] = args[arg]
 
 		return jsonify(
 			waveguide_args=waveguide_args
