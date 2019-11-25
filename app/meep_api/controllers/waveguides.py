@@ -1,23 +1,80 @@
 import os
+import io
 from flask import Blueprint, jsonify
-from flask_restplus import Api, Resource
+from flask_restplus import Api, Resource, reqparse
 import meep as mp
 from app.meep_api.models.image_transformer import ImageTransformer
 from app.meep_api.models.waveguide import Waveguide
 import base64
+import matplotlib.pyplot as plt
 
 waveguides = Blueprint('waveguides', __name__)
-waveguides_api = Api(waveguides, version='0.2.2', title='meep API', description='meep package used as API')
+waveguides_api = Api(waveguides, version='0.2.2', title='meep API waveguides', description='waveguides API')
 waveguide_namespace = waveguides_api.namespace('waveguides', description='Simple waveguides endpoints')
+
+
+@waveguide_namespace.route('/cell')
+class Cell(Resource):
+	@waveguide_namespace.doc('Sets cell')
+	@waveguide_namespace.param('x', 'x')
+	@waveguide_namespace.param('y', 'y')
+	@waveguide_namespace.param('z', 'z')
+	@waveguide_namespace.param('preview', 'Whether render preview or not')
+	def post(self):
+		parser = waveguide_namespace.parser()
+		parser.add_argument('preview', type=int, location='args', help='Whether render preview or not')
+		parser.add_argument('z', type=int, location='args', help='z')
+		parser.add_argument('y', type=int, location='args', help='y')
+		parser.add_argument('x', type=int, location='args', help='x')
+		args = parser.parse_args()
+		waveguide = Waveguide(waveguides, 'straight')
+
+		if args['preview'] == 1:
+			waveguide.set_cell(args)
+			waveguide.set_geometry()
+			waveguide.set_sources()
+			waveguide.set_layers()
+			waveguide.set_resolution()
+
+			sim = waveguide.simulate(waveguide.data)
+			eps_data = sim.get_array(center=mp.Vector3(), size=waveguide.get_cell(), component=mp.Dielectric)
+			plt.figure()
+			plt.imshow(eps_data.transpose(), interpolation='spline36', cmap='binary')
+			plt.axis('off')
+			fig_electric = plt.gcf()
+
+			waveguide.discard_data()
+			waveguide.set_cell(args)
+
+			buffer = io.BytesIO()
+			fig_electric.savefig(buffer, format='png')
+			buffer.seek(0)
+			cell_preview = buffer.read()
+			buffer.close()
+
+			return jsonify(
+				cell_preview=cell_preview,
+				waveguide=waveguide.__dict__
+			)
+
+		waveguide.set_cell(args)
+
+		return jsonify(
+			waveguide=waveguide.__dict__
+		)
 
 
 @waveguide_namespace.route('/straight-waveguide')
 class StraightWaveguide(Resource):
 	@waveguide_namespace.doc('Returns test text and computes of e/m wave propagation in straight waveguide')
-	def get(self):
-		waveguide = Waveguide(waveguides, 'straight')
+	@waveguide_namespace.param('waveguide', 'Waveguide')
+	def post(self):
+		parser = waveguide_namespace.parser()
+		parser.add_argument('waveguide', type=object, location='args', help='waveguide object')
+		args = parser.parse_args()
 
-		waveguide.set_cell()
+		waveguide = args['waveguide']
+
 		waveguide.set_geometry()
 		waveguide.set_sources()
 		waveguide.set_layers()
@@ -28,7 +85,7 @@ class StraightWaveguide(Resource):
 		waveguide.image_transform(0.7)
 
 		return jsonify(
-			electric='It works and everythin is pretty mush ok!'
+			electric='It works and everything is pretty mush ok!'
 		)
 
 

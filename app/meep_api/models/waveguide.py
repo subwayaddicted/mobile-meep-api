@@ -1,4 +1,5 @@
 import os
+from flask import Blueprint
 from typing import Union
 import meep as mp
 from app.meep_api.models.image_transformer import ImageTransformer
@@ -10,14 +11,19 @@ class Waveguide:
 	colormap: str
 	data: dict
 
-	def __init__(self, namespace: object, waveguide_type: str):
+	def __init__(self, namespace: Blueprint, waveguide_type: str):
 		self.root_dir = os.path.dirname(namespace.root_path)
 		self.dir_out = 'mobile-meep-out/' + waveguide_type
 		self.colormap = os.path.join(self.root_dir, 'static', 'colormaps', 'dkbluered')
 		self.data = {}
 
-	def set_cell(self):
-		self.data['cell'] = mp.Vector3(16, 8, 0)
+	def set_cell(self, args: dict):
+		self.data['cell'] = mp.Vector3(args['x'], args['y'], 0).__dict__
+
+	def get_cell(self) -> object:
+		cell = self.data['cell']
+
+		return cell
 
 	def set_geometry(self):
 		self.data['geometry'] = [
@@ -40,7 +46,7 @@ class Waveguide:
 	def set_resolution(self):
 		self.data['resolution'] = 10
 
-	def simulate(self, data: dict) -> object:
+	def simulate(self, data: dict) -> mp.Simulation:
 		simulation = mp.Simulation(
 			cell_size=data['cell'],
 			boundary_layers=data['pml_layers'],
@@ -50,7 +56,7 @@ class Waveguide:
 
 		return simulation
 
-	def output(self, simulation: object, each: Union[int, float], until: Union[int, float]):
+	def output(self, simulation: mp.Simulation, each: Union[int, float], until: Union[int, float]):
 		simulation.use_output_directory(self.dir_out)
 
 		simulation.run(mp.at_every(each, mp.output_png(mp.Ez, "-Zc" + self.colormap)), until=until)
@@ -58,3 +64,6 @@ class Waveguide:
 	def image_transform(self, duration: Union[int, float]):
 		image_transformer = ImageTransformer(self.dir_out)
 		image_transformer.png_to_gif(duration)
+
+	def discard_data(self):
+		self.data = {}
