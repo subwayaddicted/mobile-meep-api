@@ -9,7 +9,7 @@ import base64
 import matplotlib.pyplot as plt
 
 waveguides = Blueprint('waveguides', __name__)
-waveguides_api = Api(waveguides, version='0.2.2', title='meep API waveguides', description='waveguides API')
+waveguides_api = Api(waveguides, version='0.2.3', title='meep API waveguides', description='waveguides API')
 waveguide_namespace = waveguides_api.namespace('waveguides', description='Simple waveguides endpoints')
 
 
