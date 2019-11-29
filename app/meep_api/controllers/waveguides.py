@@ -26,8 +26,8 @@ geometry_center_data = {
 	'y': fields.String(attribure='Geometry center y component')
 }
 geometry_data = {
-	'coordinates': fields.Nested(geometry_block_data.items()),
-	'center': fields.Nested(geometry_center_data.items()),
+	'coordinates': fields.List(fields.Nested(geometry_block_data)),
+	'center': fields.List(fields.Nested(geometry_center_data)),
 	'material': fields.Integer
 }
 sources_center_data = {
@@ -37,18 +37,18 @@ sources_center_data = {
 sources_data = {
 	'frequency': fields.Float,
 	'component': fields.Integer,
-	'center': fields.Nested(sources_center_data.items())
+	'center': fields.List(fields.Nested(sources_center_data))
 }
 data = {
-	'cell': fields.Nested(cell_fields),
-	'geometry': fields.Nested(geometry_data.items()),
-	'sources': fields.Nested(sources_data.items()),
+	'cell': fields.List(fields.Nested(cell_fields)),
+	'geometry': fields.List(fields.Nested(geometry_data)),
+	'sources': fields.List(fields.Nested(sources_data)),
 	'pml_layers': fields.List,
 	'resolution': fields.Integer
 }
 
 waveguide_data = waveguide_namespace.model('waveguide_data', {
-	'data': fields.Nested(data.items()),
+	'data': fields.List(fields.Nested(data)),
 	'waveguide_type': fields.String
 })
 
