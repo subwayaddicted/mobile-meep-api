@@ -11,22 +11,52 @@ waveguides = Blueprint('waveguides', __name__)
 waveguides_api = Api(waveguides, version='0.3.0', title='meep API waveguides', description='waveguides API')
 waveguide_namespace = waveguides_api.namespace('waveguides', description='Simple waveguides endpoints')
 
-cell_model = {'x': fields.String(attribure='x'), 'y': fields.String(attribure='y'), 'z': fields.String(attribure='z')}
-geometry_model = {}
-data = {}
+cell_fields = {
+	'x': fields.String(attribure='Cell x component'),
+	'y': fields.String(attribure='Cell y component'),
+	'z': fields.String(attribure='Cell z component')
+}
+geometry_block_data = {
+	'x': fields.String(attribure='Block x component'),
+	'y': fields.String(attribure='Block y component'),
+	'z': fields.String(attribure='Block z component'),
+}
+geometry_center_data = {
+	'x': fields.String(attribure='Geometry center x component'),
+	'y': fields.String(attribure='Geometry center y component')
+}
+geometry_data = {
+	'coordinates': fields.Nested(geometry_block_data.items()),
+	'center': fields.Nested(geometry_center_data.items()),
+	'material': fields.Integer
+}
+sources_center_data = {
+	'x': fields.String(attribure='Sources center x component'),
+	'y': fields.String(attribure='Sources center y component')
+}
+sources_data = {
+	'frequency': fields.Float,
+	'component': fields.Integer,
+	'center': fields.Nested(sources_center_data.items())
+}
+data = {
+	'cell': fields.Nested(cell_fields),
+	'geometry': fields.Nested(geometry_data.items()),
+	'sources': fields.Nested(sources_data.items()),
+	'pml_layers': fields.List,
+	'resolution': fields.Integer
+}
 
-waveguide_namespace.model('waveguide_data', {
-	'data':fields.Nested()
+waveguide_data = waveguide_namespace.model('waveguide_data', {
+	'data': fields.Nested(data.items()),
+	'waveguide_type': fields.String
 })
 
 
 @waveguide_namespace.route('/cell')
 class Cell(Resource):
 	@waveguide_namespace.doc('Sets cell')
-	@waveguide_namespace.param('x', 'x coordinate of the field')
-	@waveguide_namespace.param('y', 'y coordinate of the field')
-	@waveguide_namespace.param('z', 'z coordinate of the field')
-	@waveguide_namespace.param('waveguide_type', 'Waveguide type (list of available)')
+	@waveguide_namespace.doc(body=waveguide_data)
 	def post(self):
 		cell = CellModel()
 		cell_parser = cell.parse_request(waveguide_namespace)
