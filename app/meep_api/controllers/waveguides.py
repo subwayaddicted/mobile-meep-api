@@ -1,62 +1,24 @@
 import os
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from flask_restplus import Api, Resource, fields
 import meep as mp
 from app.meep_api.models.image_transformer import ImageTransformer
 from app.meep_api.models.waveguide import Waveguide
 from app.meep_api.models.cellmodel import CellModel
 from app.meep_api.models.geometrymodel import GeometryModel
+from app.meep_api.models.json.waveguide import waveguide_json_model
 
 waveguides = Blueprint('waveguides', __name__)
 waveguides_api = Api(waveguides, version='0.3.0', title='meep API waveguides', description='waveguides API')
 waveguide_namespace = waveguides_api.namespace('waveguides', description='Simple waveguides endpoints')
 
-cell_fields = {
-	'x': fields.String(attribure='Cell x component'),
-	'y': fields.String(attribure='Cell y component'),
-	'z': fields.String(attribure='Cell z component')
-}
-geometry_block_data = {
-	'x': fields.String(attribure='Block x component'),
-	'y': fields.String(attribure='Block y component'),
-	'z': fields.String(attribure='Block z component'),
-}
-geometry_center_data = {
-	'x': fields.String(attribure='Geometry center x component'),
-	'y': fields.String(attribure='Geometry center y component')
-}
-geometry_data = {
-	'coordinates': fields.List(fields.Nested(geometry_block_data)),
-	'center': fields.List(fields.Nested(geometry_center_data)),
-	'material': fields.Integer
-}
-sources_center_data = {
-	'x': fields.String(attribure='Sources center x component'),
-	'y': fields.String(attribure='Sources center y component')
-}
-sources_data = {
-	'frequency': fields.Float,
-	'component': fields.Integer,
-	'center': fields.List(fields.Nested(sources_center_data))
-}
-data = {
-	'cell': fields.List(fields.Nested(cell_fields)),
-	'geometry': fields.List(fields.Nested(geometry_data)),
-	'sources': fields.List(fields.Nested(sources_data)),
-	'pml_layers': fields.List,
-	'resolution': fields.Integer
-}
-
-waveguide_data = waveguide_namespace.model('waveguide_data', {
-	'data': fields.List(fields.Nested(data)),
-	'waveguide_type': fields.String
-})
+cell_data = waveguide_namespace.schema_model('waveguide_data', waveguide_json_model)
 
 
-@waveguide_namespace.route('/cell')
+@waveguide_namespace.route('/cell', methods=["post"])
 class Cell(Resource):
 	@waveguide_namespace.doc('Sets cell')
-	@waveguide_namespace.doc(body=waveguide_data)
+	@waveguide_namespace.marshal_with(cell_data, mask="data{cell{x}}, data{cell{y}}, data{cell{z}}")
 	def post(self):
 		cell = CellModel()
 		cell_parser = cell.parse_request(waveguide_namespace)
@@ -82,16 +44,8 @@ class Cell(Resource):
 
 @waveguide_namespace.route('/geometry')
 class Geometry(Resource):
-	waveguide_args = {
-		'data': {
-			'cell': {}
-		},
-		'waveguide_type': str
-	}
+	@waveguide_namespace.marshal_with(cell_data, mask="x, y, z")
 	@waveguide_namespace.doc('Sets geometry with preview ability')
-	@waveguide_namespace.param('waveguide_args', 'Waveguide args')
-	@waveguide_namespace.param('preview', 'Preview')
-	@waveguides_api.doc(body=waveguide_args)
 	def post(self):
 		geometry = GeometryModel()
 		geometry_parser = geometry.parse_request(waveguide_namespace)
@@ -145,52 +99,52 @@ class StraightWaveguide(Resource):
 		)
 
 
-@waveguide_namespace.route('/ninety-degree-bend')
-class NinetyDegreeBend(Resource):
-	@waveguide_namespace.doc('Returns test text and computes of e/m wave propagation in 90 degree bend waveguide')
-	def get(self):
-		root_dir = os.path.dirname(waveguides.root_path)
-		dir_out = 'mobile-meep-out/ninety-degree-bend'
-		colormap = os.path.join(root_dir, 'static', 'colormaps', 'dkbluered')
-
-		cell = mp.Vector3(16, 16, 0)
-		geometry = [mp.Block(
-			mp.Vector3(12, 1, mp.inf),
-			center=mp.Vector3(-2.5, -3.5),
-			material=mp.Medium(epsilon=12)),
-			mp.Block(
-				mp.Vector3(1, 12, mp.inf),
-				center=mp.Vector3(3.5, 2),
-				material=mp.Medium(epsilon=12))]
-
-		pml_layers = [mp.PML(1.0)]
-
-		resolution = 10
-
-		sources = [mp.Source(
-			mp.ContinuousSource(wavelength=2 * (11 ** 0.5), width=20),
-			component=mp.Ez,
-			center=mp.Vector3(-7, -3.5),
-			size=mp.Vector3(0, 1))]
-
-		sim = mp.Simulation(
-			cell_size=cell,
-			boundary_layers=pml_layers,
-			geometry=geometry,
-			sources=sources,
-			resolution=resolution)
-
-		sim.use_output_directory(dir_out)
-
-		sim.run(mp.at_every(0.6, mp.output_png(mp.Ez, "-Zc" + colormap)), until=200)
-
-		image_transformer = ImageTransformer(dir_out)
-		image_transformer.png_to_gif()
-
-		gif_path = dir_out + '-' + 'movie.gif'
-		gif = open(gif_path, 'rb')
-		gif_encoded = base64.b64encode(gif.read()).decode()
-
-		return jsonify(
-			electric='gif_encoded'
-		)
+# @waveguide_namespace.route('/ninety-degree-bend')
+# class NinetyDegreeBend(Resource):
+# 	@waveguide_namespace.doc('Returns test text and computes of e/m wave propagation in 90 degree bend waveguide')
+# 	def get(self):
+# 		root_dir = os.path.dirname(waveguides.root_path)
+# 		dir_out = 'mobile-meep-out/ninety-degree-bend'
+# 		colormap = os.path.join(root_dir, 'static', 'colormaps', 'dkbluered')
+#
+# 		cell = mp.Vector3(16, 16, 0)
+# 		geometry = [mp.Block(
+# 			mp.Vector3(12, 1, mp.inf),
+# 			center=mp.Vector3(-2.5, -3.5),
+# 			material=mp.Medium(epsilon=12)),
+# 			mp.Block(
+# 				mp.Vector3(1, 12, mp.inf),
+# 				center=mp.Vector3(3.5, 2),
+# 				material=mp.Medium(epsilon=12))]
+#
+# 		pml_layers = [mp.PML(1.0)]
+#
+# 		resolution = 10
+#
+# 		sources = [mp.Source(
+# 			mp.ContinuousSource(wavelength=2 * (11 ** 0.5), width=20),
+# 			component=mp.Ez,
+# 			center=mp.Vector3(-7, -3.5),
+# 			size=mp.Vector3(0, 1))]
+#
+# 		sim = mp.Simulation(
+# 			cell_size=cell,
+# 			boundary_layers=pml_layers,
+# 			geometry=geometry,
+# 			sources=sources,
+# 			resolution=resolution)
+#
+# 		sim.use_output_directory(dir_out)
+#
+# 		sim.run(mp.at_every(0.6, mp.output_png(mp.Ez, "-Zc" + colormap)), until=200)
+#
+# 		image_transformer = ImageTransformer(dir_out)
+# 		image_transformer.png_to_gif()
+#
+# 		gif_path = dir_out + '-' + 'movie.gif'
+# 		gif = open(gif_path, 'rb')
+# 		gif_encoded = base64.b64encode(gif.read()).decode()
+#
+# 		return jsonify(
+# 			electric='gif_encoded'
+# 		)
