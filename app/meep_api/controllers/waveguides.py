@@ -4,75 +4,14 @@ from flask_restplus import Api, Resource, fields
 import meep as mp
 from app.meep_api.models.image_transformer import ImageTransformer
 from app.meep_api.models.waveguide import Waveguide
-from app.meep_api.models.cellmodel import CellModel
-from app.meep_api.models.geometrymodel import GeometryModel
 from app.meep_api.models.json.waveguide import waveguide_json_model
 
+
 waveguides = Blueprint('waveguides', __name__)
+
 waveguides_api = Api(waveguides, version='0.3.0', title='meep API waveguides', description='waveguides API')
 waveguide_namespace = waveguides_api.namespace('waveguides', description='Simple waveguides endpoints')
-
 cell_data = waveguide_namespace.schema_model('waveguide_data', waveguide_json_model)
-
-
-@waveguide_namespace.route('/cell', methods=["post"])
-class Cell(Resource):
-	@waveguide_namespace.doc('Sets cell')
-	@waveguide_namespace.marshal_with(cell_data, mask="data{cell{x}}, data{cell{y}}, data{cell{z}}")
-	def post(self):
-		cell = CellModel()
-		cell_parser = cell.parse_request(waveguide_namespace)
-		args = cell_parser.parse_args()
-
-		waveguide_args = {
-			'data':{
-				'cell': {}
-			},
-			'waveguide_type':str
-		}
-
-		for arg in args:
-			if arg == 'waveguide_type':
-				waveguide_args['waveguide_type'] = args[arg]
-				break
-			waveguide_args['data']['cell'][arg] = args[arg]
-
-		return jsonify(
-			waveguide_args=waveguide_args
-		)
-
-
-@waveguide_namespace.route('/geometry')
-class Geometry(Resource):
-	@waveguide_namespace.marshal_with(cell_data, mask="x, y, z")
-	@waveguide_namespace.doc('Sets geometry with preview ability')
-	def post(self):
-		geometry = GeometryModel()
-		geometry_parser = geometry.parse_request(waveguide_namespace)
-		args = geometry_parser.parse_args()
-
-		if args['preview'] == 1:
-			waveguide = Waveguide(waveguides, args['waveguide_type'])
-			geometry.waveguide_set(waveguide)
-
-			sim = waveguide.simulate(waveguide.data)
-
-			fig_electric = geometry.waveguide_plot(sim, waveguide)
-
-			waveguide.discard_data()
-			waveguide.set_cell(args)
-			waveguide.set_geometry()
-
-			cell_preview = geometry.image_render(fig_electric)
-
-			return jsonify(
-				cell_preview=cell_preview,
-				waveguide=waveguide.__dict__
-			)
-
-		return jsonify(
-			waveguide='test'
-		)
 
 
 @waveguide_namespace.route('/straight-waveguide')
@@ -97,7 +36,6 @@ class StraightWaveguide(Resource):
 		return jsonify(
 			electric='It works and everything is pretty mush ok!'
 		)
-
 
 # @waveguide_namespace.route('/ninety-degree-bend')
 # class NinetyDegreeBend(Resource):
