@@ -10,4 +10,4 @@ api = Api(
 )
 
 api.add_namespace(cell_api)
-#api.add_namespace(geometry_api)
+api.add_namespace(geometry_api)

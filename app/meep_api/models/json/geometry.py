@@ -5,13 +5,13 @@ geometry_cell_model = {
 			"type": "object",
 			"properties": {
 				"x": {
-					"type": "string"
+					"type": "integer"
 				},
 				"y": {
-					"type": "string"
+					"type": "integer"
 				},
 				"z": {
-					"type": "string"
+					"type": "integer"
 				}
 			}
 		},
@@ -19,10 +19,10 @@ geometry_cell_model = {
 			"type": "object",
 			"properties": {
 				"x": {
-					"type": "string"
+					"type": "integer"
 				},
 				"y": {
-					"type": "string"
+					"type": "integer"
 				}
 			}
 		},

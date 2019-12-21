@@ -1,34 +1,23 @@
-from flask_restplus import Resource, Namespace
+from flask_restplus import Resource, Namespace, reqparse
 from flask import jsonify
-from app.meep_api.models.cellmodel import CellModel
 from app.meep_api.models.json.cell import cell_json_model
-
 
 cell_api = Namespace("cell", description="Cell actions")
 
-cell_data = cell_api.schema_model('cell_data', cell_json_model)
+cell_model = cell_api.schema_model('Cell Model', cell_json_model)
 
 
-@cell_api.route('/preview', methods=["post"])
-class Cell(Resource):
+@cell_api.route('/set', methods=["post"])
+class Set(Resource):
 	@cell_api.doc('Sets cell')
-	@cell_api.marshal_with(cell_data, mask="data{cell{x}}, data{cell{y}}, data{cell{z}}")
+	@cell_api.expect(cell_model)
 	def post(self):
-		cell_model = CellModel()
-		cell_parser = cell_model.parse_request(cell_api)
-		args = cell_parser.parse_args()
-
-		cell_args = {
-			'cell': {
-				'x': 'test',
-				'y': 'test',
-				'z': 'test'
-			}
-		}
-
-		for arg in args:
-			cell_args['cell'][arg] = args[arg]
+		parser = reqparse.RequestParser()
+		parser.add_argument('x', type=int)
+		parser.add_argument('y', type=int)
+		parser.add_argument('z', type=int)
+		args = parser.parse_args()
 
 		return jsonify(
-			waveguide_args=cell_args
+			cell=args
 		)

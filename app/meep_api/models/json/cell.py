@@ -2,13 +2,13 @@ cell_json_model = {
 	"type": "object",
 	"properties": {
 		"x": {
-			"type": "string"
+			"type": "integer"
 		},
 		"y": {
-			"type": "string"
+			"type": "integer"
 		},
 		"z": {
-			"type": "string"
+			"type": "integer"
 		}
 	},
 	"required": [
