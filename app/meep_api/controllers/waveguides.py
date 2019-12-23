@@ -46,10 +46,11 @@ class StraightWaveguide(Resource):
 # 		colormap = os.path.join(root_dir, 'static', 'colormaps', 'dkbluered')
 #
 # 		cell = mp.Vector3(16, 16, 0)
-# 		geometry = [mp.Block(
-# 			mp.Vector3(12, 1, mp.inf),
-# 			center=mp.Vector3(-2.5, -3.5),
-# 			material=mp.Medium(epsilon=12)),
+# 		geometry = [
+# 			mp.Block(
+# 				mp.Vector3(12, 1, mp.inf),
+# 				center=mp.Vector3(-2.5, -3.5),
+# 				material=mp.Medium(epsilon=12)),
 # 			mp.Block(
 # 				mp.Vector3(1, 12, mp.inf),
 # 				center=mp.Vector3(3.5, 2),
