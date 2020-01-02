@@ -99,13 +99,15 @@ class Waveguide:
 		return fig_electric
 
 	def preview_output(self, fig_electric: figure.Figure):
+		file = open(self.dir_out+'/preview.png', 'wb+')
 		buffer = BytesIO()
 		fig_electric.savefig(buffer, format='png')
 		buffer.seek(0)
-		cell_preview = json.dumps(buffer.read())
+		file.write(buffer.read())
 		buffer.close()
+		file.close()
 
-		return cell_preview
+		return self.dir_out+'/preview/preview.png'
 
 	def output(self, simulation: mp.Simulation, each: Union[int, float], until: Union[int, float]):
 		simulation.use_output_directory(self.dir_out)

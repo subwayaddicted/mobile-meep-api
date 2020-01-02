@@ -47,7 +47,7 @@ class Preview(Resource):
 		del args['waveguide_type']
 
 		waveguide = Waveguide(waveguide_type, True)
-		cell = {"x": args["coordinates"]["x"], "y": args["coordinates"]["y"], "z": args["coordinates"]["z"]}
+		cell = {"x": 16, "y": 8, "z": 0}
 		waveguide.set_cell(cell)
 		waveguide.set_geometry(args)
 		waveguide.set_sources({})
