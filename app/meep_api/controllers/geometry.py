@@ -1,11 +1,11 @@
 from flask_restplus import Resource, Namespace, reqparse
 from flask import jsonify
 from app.meep_api.models.waveguide import Waveguide
-from app.meep_api.models.json.geometry import geometry_cell_model
+from app.meep_api.models.json.geometry import geometry_json_model
 
 geometry_api = Namespace("geometry", description="Geometry actions")
 
-geometry_model = geometry_api.schema_model('Geometry Model', geometry_cell_model)
+geometry_model = geometry_api.schema_model('Geometry Model', geometry_json_model)
 
 
 @geometry_api.route('/set')

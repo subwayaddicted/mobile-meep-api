@@ -1,4 +1,4 @@
-geometry_cell_model = {
+geometry_json_model = {
 	"type": "object",
 	"properties": {
 		"coordinates": {
