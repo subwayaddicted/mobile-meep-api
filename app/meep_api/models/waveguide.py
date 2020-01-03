@@ -6,7 +6,6 @@ import meep as mp
 from app.meep_api.models.image_transformer import ImageTransformer
 from io import BytesIO
 from matplotlib import pyplot, figure
-from flask import json
 
 
 class Waveguide:
@@ -14,6 +13,7 @@ class Waveguide:
 	dir_out: str
 	colormap: str
 	sim_data: dict
+	waveguide_type: str
 
 	def __init__(self, waveguide_type: str, preview: bool = False):
 		if preview:
@@ -23,6 +23,7 @@ class Waveguide:
 		self.dir_out = 'mobile-meep-out/' + waveguide_type
 		self.colormap = path.join(self.root_dir, 'app', 'meep_api', 'static', 'colormaps', 'dkbluered')
 		self.sim_data = {}
+		self.waveguide_type = waveguide_type
 
 	def set_cell(self, args: dict):
 		self.sim_data['cell'] = mp.Vector3(args['x'], args['y'], args['z'])
@@ -35,6 +36,11 @@ class Waveguide:
 	def set_geometry(self, args: dict):
 		if args['coordinates']['z'] == 0:
 			args['coordinates']['z'] = mp.inf
+
+		if self.waveguide_type == 'ninety-degree-bend':
+			self.sim_data['geometry'] = [
+
+			]
 
 		self.sim_data['geometry'] = [
 			mp.Block(
