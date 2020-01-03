@@ -1,10 +1,22 @@
 from .cell import cell_json_model
-from .geometry import geometry_cell_model
+from .geometry import geometry_json_model
 
 waveguide_data_json_model = {
     "data": {
         "type": "object",
         "properties": {
+            "cell": {
+                "type": "object",
+                "properties": {
+
+                }
+            },
+            "geometry": {
+                "type": "object",
+                "properties": {
+
+                }
+            },
             "sources": {
                 "type": "object",
                 "properties": {
@@ -15,30 +27,25 @@ waveguide_data_json_model = {
                         "type": "object",
                         "properties": {
                             "x": {
-                                "type": "string"
+                                "type": "integer"
                             },
                             "y": {
-                                "type": "string"
+                                "type": "integer"
                             }
                         },
                         "required": [
                             "x",
                             "y"
                         ]
-                    },
-                    "material": {
-                        "type": "integer"
                     }
                 },
                 "required": [
                     "frequency",
-                    "center",
-                    "material"
+                    "center"
                 ]
             },
             "pml_layers": {
-                "type": "array",
-                "items": {}
+                "type": "number"
             },
             "resolution": {
                 "type": "integer"
@@ -54,5 +61,7 @@ waveguide_data_json_model = {
     }
 }
 
-waveguide_data_json_model["data"]["properties"].update(cell_json_model)
-waveguide_data_json_model["data"]["properties"].update(geometry_cell_model)
+waveguide_data_json_model["data"]["properties"]['cell'].update(cell_json_model)
+waveguide_data_json_model["data"]["properties"]['geometry'].update(geometry_json_model)
+
+complete_waveguide_data_json_model = waveguide_data_json_model

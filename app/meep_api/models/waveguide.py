@@ -21,7 +21,7 @@ class Waveguide:
 
 		self.root_dir = root_dir
 		self.dir_out = 'mobile-meep-out/' + waveguide_type
-		self.colormap = path.join(self.root_dir, 'static', 'colormaps', 'dkbluered')
+		self.colormap = path.join(self.root_dir, 'app', 'meep_api', 'static', 'colormaps', 'dkbluered')
 		self.sim_data = {}
 
 	def set_cell(self, args: dict):
@@ -55,29 +55,29 @@ class Waveguide:
 
 	def set_sources(self, args: dict):
 		if not args:
-			frequency = 0.15
-			center = {
+			args['frequency'] = 0.15
+			args['center'] = {
 				"x": -7,
 				"y": 0
 			}
 
 		self.sim_data['sources'] = [mp.Source(
-			mp.ContinuousSource(frequency=frequency),
+			mp.ContinuousSource(frequency=args['frequency']),
 			component=mp.Ez,
-			center=mp.Vector3(center['x'], center['y']))
+			center=mp.Vector3(args['center']['x'], args['center']['y']))
 		]
 
 	def set_layers(self, args: dict):
 		if not args:
-			pml = 1.0
+			args = 1.0
 
-		self.sim_data['pml_layers'] = [mp.PML(pml)]
+		self.sim_data['pml_layers'] = [mp.PML(args)]
 
 	def set_resolution(self, args: dict):
 		if not args:
-			resolution = 10
+			args = 10
 
-		self.sim_data['resolution'] = resolution
+		self.sim_data['resolution'] = args
 
 	def simulate(self, data: dict) -> mp.Simulation:
 		simulation = mp.Simulation(
