@@ -44,6 +44,21 @@ waveguide_data_json_model = {
                     "center"
                 ]
             },
+			"simulation_time": {
+				"type": "object",
+				"properties": {
+					"between": {
+						"type": "integer"
+					},
+					"until": {
+						"type": "integer"
+					}
+				},
+				"required": [
+					"between",
+					"until"
+				]
+			},
             "pml_layers": {
                 "type": "number"
             },
