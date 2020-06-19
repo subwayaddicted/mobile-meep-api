@@ -22,10 +22,11 @@ class StraightWaveguide(Resource):
 		parser.add_argument('waveguide_type', type=str)
 		args = parser.parse_args()
 
-		waveguide_type = args['waveguide_type']
+		waveguide_type = 'straight'#args['waveguide_type']
 		del args['waveguide_type']
 
 		data = args['data']
+		time = data['simulation_time']
 
 		waveguide = Waveguide(waveguide_type, False)
 
@@ -36,10 +37,17 @@ class StraightWaveguide(Resource):
 		waveguide.set_resolution(data['resolution'])
 
 		sim = waveguide.simulate(waveguide.sim_data)
-		waveguide.output(sim, 0.7, 500)
-		waveguide.image_transform(0.7)
+		waveguide.output(sim, time['between'], time['until'])
+		waveguide.image_transform(time['between'])
 
 		folder = 'mobile-meep-out/'+waveguide_type
+		self.remove_pngs(folder)
+
+		return jsonify(
+			electric='mobile-meep-out/'+waveguide_type+'-movie.gif'
+		)
+
+	def remove_pngs(self, folder: str):
 		for filename in os.listdir(folder):
 			file_path = os.path.join(folder, filename)
 			try:
@@ -49,10 +57,6 @@ class StraightWaveguide(Resource):
 					shutil.rmtree(file_path)
 			except Exception as e:
 				print('Failed to delete %s. Reason: %s' % (file_path, e))
-
-		return jsonify(
-			electric='mobile-meep-out/'+waveguide_type+'-movie.gif'
-		)
 
 # @waveguide_api.route('/ninety-degree-bend')
 # class NinetyDegreeBend(Resource):
