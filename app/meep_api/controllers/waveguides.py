@@ -1,45 +1,66 @@
-import os
-from flask import Blueprint, jsonify, request
-from flask_restplus import Api, Resource, fields
-import meep as mp
-from app.meep_api.models.image_transformer import ImageTransformer
+from flask import Blueprint, jsonify
+from flask_restplus import Resource, Namespace, reqparse
+import os, shutil
 from app.meep_api.models.waveguide import Waveguide
 from app.meep_api.models.json.waveguide import waveguide_json_model
 
 
 waveguides = Blueprint('waveguides', __name__)
 
-waveguides_api = Api(waveguides, version='0.3.0', title='meep API waveguides', description='waveguides API')
-waveguide_namespace = waveguides_api.namespace('waveguides', description='Simple waveguides endpoints')
-cell_data = waveguide_namespace.schema_model('waveguide_data', waveguide_json_model)
+waveguide_api = Namespace('waveguides', description='Simple waveguides endpoints')
+waveguide_model = waveguide_api.schema_model('Waveguide Model', waveguide_json_model)
 
 
-@waveguide_namespace.route('/straight-waveguide')
+@waveguide_api.route('/straight-waveguide')
 class StraightWaveguide(Resource):
-	@waveguide_namespace.doc('Returns test text and computes of e/m wave propagation in straight waveguide')
+	@waveguide_api.doc('Returns test text and computes of e/m wave propagation in straight waveguide')
+	@waveguide_api.expect(waveguide_model)
+	@waveguide_api.param('waveguide_type', 'Describing waveguide type selected at the beginning')
 	def post(self):
-		parser = waveguide_namespace.parser()
-		parser.add_argument('waveguide', type=object, location='args', help='waveguide object')
+		parser = reqparse.RequestParser()
+		parser.add_argument('data', type=dict)
+		parser.add_argument('waveguide_type', type=str)
 		args = parser.parse_args()
 
-		waveguide = args['waveguide']
+		waveguide_type = 'straight'#args['waveguide_type']
+		del args['waveguide_type']
 
-		waveguide.set_geometry()
-		waveguide.set_sources()
-		waveguide.set_layers()
-		waveguide.set_resolution()
+		data = args['data']
+		time = data['simulation_time']
 
-		sim = waveguide.simulate(waveguide.data)
-		waveguide.output(sim, 0.7, 50)
-		waveguide.image_transform(0.7)
+		waveguide = Waveguide(waveguide_type, False)
+
+		waveguide.set_cell(data['cell'])
+		waveguide.set_geometry(data['geometry'])
+		waveguide.set_sources(data['sources'])
+		waveguide.set_layers(data['pml_layers'])
+		waveguide.set_resolution(data['resolution'])
+
+		sim = waveguide.simulate(waveguide.sim_data)
+		waveguide.output(sim, time['between'], time['until'])
+		waveguide.image_transform(time['between'])
+
+		folder = 'mobile-meep-out/'+waveguide_type
+		self.remove_pngs(folder)
 
 		return jsonify(
-			electric='It works and everything is pretty mush ok!'
+			electric='mobile-meep-out/'+waveguide_type+'-movie.gif'
 		)
 
-# @waveguide_namespace.route('/ninety-degree-bend')
+	def remove_pngs(self, folder: str):
+		for filename in os.listdir(folder):
+			file_path = os.path.join(folder, filename)
+			try:
+				if os.path.isfile(file_path) or os.path.islink(file_path):
+					os.unlink(file_path)
+				elif os.path.isdir(file_path):
+					shutil.rmtree(file_path)
+			except Exception as e:
+				print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+# @waveguide_api.route('/ninety-degree-bend')
 # class NinetyDegreeBend(Resource):
-# 	@waveguide_namespace.doc('Returns test text and computes of e/m wave propagation in 90 degree bend waveguide')
+# 	@waveguide_api.doc('Returns test text and computes of e/m wave propagation in 90 degree bend waveguide')
 # 	def get(self):
 # 		root_dir = os.path.dirname(waveguides.root_path)
 # 		dir_out = 'mobile-meep-out/ninety-degree-bend'
