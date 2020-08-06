@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify
 from flask_restplus import Resource, Namespace, reqparse
 from app.meep_api.models.waveguide import Waveguide
 from app.meep_api.models.json.waveguide import waveguide_json_model
+from app.meep_api.models.folder_manager import FolderManager
 
 
 waveguides = Blueprint('waveguides', __name__)
@@ -40,7 +41,8 @@ class StraightWaveguide(Resource):
 		waveguide.image_transform(time['between'])
 
 		folder = 'mobile-meep-out/'+waveguide_type
-		self.remove_pngs(folder)
+		images_folder_manager = FolderManager(folder)
+		images_folder_manager.remove_pngs()
 
 		return jsonify(
 			electric='mobile-meep-out/'+waveguide_type+'-movie.gif'
