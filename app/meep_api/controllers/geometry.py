@@ -33,6 +33,12 @@ class Set(Resource):
 
 @geometry_api.route('/preview')
 class Preview(Resource):
+	"""
+	Example json:
+	coordinates: bigger than 16, 1, 0(inf basically)
+	center: 0, 0
+	material: 12
+	"""
 	@geometry_api.doc('Sets geometry for straight waveguide')
 	@geometry_api.expect(geometry_model)
 	@geometry_api.param('waveguide_type', 'Describing waveguide type selected at the beginning')
