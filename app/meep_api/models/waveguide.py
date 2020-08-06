@@ -4,9 +4,6 @@ from definitions import root_dir
 from typing import Union
 import meep as mp
 from app.meep_api.models.image_transformer import ImageTransformer
-from io import BytesIO
-from matplotlib import pyplot, figure
-from flask import json
 
 
 class Waveguide:
@@ -88,26 +85,6 @@ class Waveguide:
 			resolution=data['resolution'])
 
 		return simulation
-
-	def preview_figure(self, simulation: mp.Simulation, waveguide: Waveguide, ) -> figure.Figure:
-		eps_data = simulation.get_array(center=mp.Vector3(), size=waveguide.get_cell(), component=mp.Dielectric)
-		pyplot.figure()
-		pyplot.imshow(eps_data.transpose(), interpolation='spline36', cmap='binary')
-		pyplot.axis('off')
-		fig_electric = pyplot.gcf()
-
-		return fig_electric
-
-	def preview_output(self, fig_electric: figure.Figure):
-		file = open(self.dir_out+'/preview.png', 'wb+')
-		buffer = BytesIO()
-		fig_electric.savefig(buffer, format='png')
-		buffer.seek(0)
-		file.write(buffer.read())
-		buffer.close()
-		file.close()
-
-		return self.dir_out+'/preview/preview.png'
 
 	def output(self, simulation: mp.Simulation, each: Union[int, float], until: Union[int, float]):
 		simulation.use_output_directory(self.dir_out)

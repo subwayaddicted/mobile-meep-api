@@ -1,8 +1,8 @@
 from flask import Blueprint, jsonify
 from flask_restplus import Resource, Namespace, reqparse
-import os, shutil
 from app.meep_api.models.waveguide import Waveguide
 from app.meep_api.models.json.waveguide import waveguide_json_model
+from app.meep_api.models.folder_manager import FolderManager
 
 
 waveguides = Blueprint('waveguides', __name__)
@@ -41,22 +41,12 @@ class StraightWaveguide(Resource):
 		waveguide.image_transform(time['between'])
 
 		folder = 'mobile-meep-out/'+waveguide_type
-		self.remove_pngs(folder)
+		images_folder_manager = FolderManager(folder)
+		images_folder_manager.remove_pngs()
 
 		return jsonify(
 			electric='mobile-meep-out/'+waveguide_type+'-movie.gif'
 		)
-
-	def remove_pngs(self, folder: str):
-		for filename in os.listdir(folder):
-			file_path = os.path.join(folder, filename)
-			try:
-				if os.path.isfile(file_path) or os.path.islink(file_path):
-					os.unlink(file_path)
-				elif os.path.isdir(file_path):
-					shutil.rmtree(file_path)
-			except Exception as e:
-				print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 # @waveguide_api.route('/ninety-degree-bend')
 # class NinetyDegreeBend(Resource):
