@@ -2,6 +2,7 @@ from flask_restplus import Resource, Namespace, reqparse
 from flask import jsonify
 from app.meep_api.models.waveguide import Waveguide
 from app.meep_api.models.json.geometry import geometry_json_model
+from app.meep_api.models.preview import Preview as GeometryPreview
 
 geometry_api = Namespace("geometry", description="Geometry actions")
 
@@ -56,8 +57,11 @@ class Preview(Resource):
 
 		sim = waveguide.simulate(waveguide.sim_data)
 		sim.run(until=1)
-		fig = waveguide.preview_figure(sim, waveguide)
-		output = waveguide.preview_output(fig)
+
+		preview = GeometryPreview(sim, waveguide)
+
+		fig = preview.preview_figure()
+		output = preview.preview_output(fig)
 
 		return jsonify(
 			fig=output
